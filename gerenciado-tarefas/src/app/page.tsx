@@ -1,51 +1,37 @@
+'use client';
+import { trpc } from '@/app/utils/clientTrpc';
 import Image from "next/image";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const tarefas = trpc.tarefas.listar.useQuery();
+  const criarTarefa = trpc.tarefas.criar.useMutation({
+    onSuccess: () => {
+      tarefas.refetch();
+    }
+  });
+
+  const handleNovaTarefa = () => {
+    criarTarefa.mutate({ titulo: "Nova Tarefa" });
+  };
+
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+        <button 
+          onClick={handleNovaTarefa}
+          className="bg-blue-500 text-white p-2 rounded"
+        >
+          Adicionar Tarefa
+        </button>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+        <div className="mt-4">
+          {tarefas.data?.map(tarefa => (
+            <div key={tarefa.id} className="p-2 border mb-2">
+              <span>{tarefa.titulo}</span>
+              <span>{tarefa.concluida ? " (Concluída)" : " (Pendente)"}</span>
+            </div>
+          ))}
         </div>
-      </main>
       <footer className={styles.footer}>
         <a
           href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
