@@ -28,7 +28,7 @@ export default function Home() {
           {tarefas.data?.map(tarefa => (
             <div key={tarefa.id} className="p-2 border mb-2">
               <span>{tarefa.titulo}</span>
-              <span>{tarefa.concluida ? " (Concluída)" : " (Pendente)"}</span>
+              <span>{tarefa.descricao ? " (Concluída)" : " (Pendente)"}</span>
             </div>
           ))}
         </div>
