@@ -26,6 +26,13 @@ export const tarefasRouter = router({
     .mutation(({input})=>{
         const tarefa = tarefas.find((t)=> t.id == input.id);
         if(!tarefa){throw new Error('Tarefa não encontrada')}
+    }),
+    remover: publicProcedure
+    .input(z.object({id: z.number()}))
+    .mutation(({input}) => {
+        const index = tarefas.findIndex((t) => t.id === input.id);
+        if(index === -1){throw new Error('Tarefa não encontrada')}
+        tarefas.splice(index,1)
+        return{message: 'Tarefa removida', id:input.id}
     })
-    
 });
