@@ -20,5 +20,12 @@ export const tarefasRouter = router({
       };
       tarefas.push(novaTarefa);
       return novaTarefa;
+    }),
+    atualizar: publicProcedure
+    .input(z.object({id: z.number()}))
+    .mutation(({input})=>{
+        const tarefa = tarefas.find((t)=> t.id == input.id);
+        if(!tarefa){throw new Error('Tarefa não encontrada')}
     })
+    
 });
