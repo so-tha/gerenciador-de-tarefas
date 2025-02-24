@@ -1,4 +1,4 @@
-import {router } from '@/app/server/trpc_init';
+import { router } from './trpc_init';
 import { tarefasRouter } from './routers/tarefas';
 
 export const appRouter = router({
