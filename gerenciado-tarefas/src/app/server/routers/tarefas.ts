@@ -1,11 +1,19 @@
 import { z } from 'zod';
 import { router, publicProcedure } from '../trpc_init';
 
-const tarefas: { id: number; titulo: string; concluida: boolean; descricao: string; dataCriacao: Date }[] = [];
+const tarefas: { 
+  id: number; 
+  titulo: string; 
+  concluida: boolean; 
+  descricao: string; 
+  dataCriacao: Date 
+}[] = [];
 
 export const tarefasRouter = router({
   criar: publicProcedure
-    .input(z.object({ titulo: z.string() }))
+    .input(z.object({ 
+      titulo: z.string() 
+    }))
     .mutation(({ input }) => {
       console.log("Chamando a rota criar com input:", input);
       const novaTarefa = {
@@ -20,28 +28,51 @@ export const tarefasRouter = router({
       console.log("Resposta do servidor:", response);
       return response;
     }),
-    listar: publicProcedure
+    
+  listar: publicProcedure
     .query(() => {
       console.log("Chamando a rota listar");
       return tarefas;
     }),
-    atualizar: publicProcedure
-    .input(z.object({id: z.number()}))
-    .mutation(({input})=>{
-        const tarefa = tarefas.find((t)=> t.id == input.id);
-        if(!tarefa){throw new Error('Tarefa não encontrada')}
-        return {message: 'Tarefa atualiza', id:input.id}
+    
+  atualizar: publicProcedure
+    .input(z.object({
+      id: z.number(),
+      titulo: z.string().optional(),
+      descricao: z.string().optional(),
+      concluida: z.boolean().optional()
+    }))
+    .mutation(({input}) => {
+      const index = tarefas.findIndex((t) => t.id === input.id);
+      if (index === -1) {
+        throw new Error('Tarefa não encontrada');
+      }
+      tarefas[index] = {
+        ...tarefas[index],
+        ...(input.titulo !== undefined && { titulo: input.titulo }),
+        ...(input.descricao !== undefined && { descricao: input.descricao }),
+        ...(input.concluida !== undefined && { concluida: input.concluida })
+      };
+      
+      return { 
+        message: 'Tarefa atualizada com sucesso', 
+        tarefa: tarefas[index] 
+      };
     }),
-    remover: publicProcedure
+    
+  remover: publicProcedure
     .input(z.object({id: z.number()}))
     .mutation(({input}) => {
-        const index = tarefas.findIndex((t) => t.id === input.id);
-        if(index === -1){throw new Error('Tarefa não encontrada')}
-        tarefas.splice(index,1)
-        return{message: 'Tarefa removida', id:input.id}
+      const index = tarefas.findIndex((t) => t.id === input.id);
+      if (index === -1) {
+        throw new Error('Tarefa não encontrada');
+      }
+      tarefas.splice(index, 1);
+      return { message: 'Tarefa removida', id: input.id };
     }),
-    precarregar: publicProcedure
+    
+  precarregar: publicProcedure
     .query(() => {
-        return tarefas;
+      return tarefas;
     }),
 });
