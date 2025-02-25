@@ -68,14 +68,14 @@ export default function TarefaForm() {
   
   return (
     <div className={styles.page}>
-      <h1 className="text-2xl font-bold mb-4">
+      <h1 className="edic-tarefa">
         {tarefaId ? 'Editar Tarefa' : 'Nova Tarefa'}
       </h1>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="titulo" className="block text-sm font-medium mb-1">
-            Título
+          <label htmlFor="titulo" className="titulo">
+            Título:
           </label>
           <input
             type="text"
@@ -89,8 +89,8 @@ export default function TarefaForm() {
         </div>
         
         <div>
-          <label htmlFor="descricao" className="block text-sm font-medium mb-1">
-            Descrição
+          <label htmlFor="descricao" className="titulo-descricao">
+            Descrição:
           </label>
           <textarea
             id="descricao"
@@ -102,7 +102,7 @@ export default function TarefaForm() {
           />
         </div>
         
-        <div className="flex items-center">
+        <div className="checkbox">
           <input
             type="checkbox"
             id="concluida"
@@ -111,15 +111,15 @@ export default function TarefaForm() {
             onChange={handleChange}
             className="mr-2"
           />
-          <label htmlFor="concluida">
+          <label htmlFor="concluida" className='concluida'>
             Concluída
           </label>
         </div>
         
-        <div className="flex space-x-4">
+        <div className="buttons">
           <button
             type="submit"
-            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            className="submit-button"
           >
             Salvar
           </button>
@@ -127,7 +127,7 @@ export default function TarefaForm() {
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="border border-gray-300 p-2 rounded hover:bg-gray-100"
+            className="submit-button"
           >
             Cancelar
           </button>

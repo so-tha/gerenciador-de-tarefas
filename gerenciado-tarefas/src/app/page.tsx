@@ -37,51 +37,54 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Lista de Tarefas</h1>
+      <div className="div-titulo">
+        <h1 className="titulo">📍Lista de Tarefas</h1>
         <Link 
           href="/tarefa/form" 
-          className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
+          className="nv-tarefa-link"
         >
-          Nova Tarefa
+          ✨ Adicionar Nova Tarefa ✨ 
         </Link>
       </div>
 
       <div className="mt-4">
         {tarefas && tarefas.length > 0 ? (
           tarefas.map(tarefa => (
-            <div key={tarefa.id} className="p-3 border mb-2 rounded flex justify-between items-center">
+            <div key={tarefa.id} className="id-tarefa">
               <div>
-                <div className="font-medium">{tarefa.titulo}</div>
+                <div className="titulo-tarefa">{tarefa.titulo}</div>
                 {tarefa.descricao && (
-                  <div className="text-gray-600 text-sm mt-1">{tarefa.descricao}</div>
+                  <div >
+                    <p className="descricao-tarefa">Descrição: {tarefa.descricao}</p></div>
                 )}
-                <div className="text-xs text-gray-500 mt-1">
+                <div>
                   {tarefa.concluida ? 
-                    <span className="text-green-600">Concluída</span> : 
-                    <span className="text-yellow-600">Pendente</span>
+                    <span className="concluida">Concluída</span> : 
+                    <span className="pendente">Pendente</span>
                   }
                 </div>
               </div>
               
-              <div className="flex space-x-2">
+              <div>
                 <button
                   onClick={() => handleAlternarStatus(tarefa.id, tarefa.concluida)}
-                  className={`p-1 px-2 rounded text-xs ${tarefa.concluida ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}
+                  className={`button-concluida ${tarefa.concluida ? 'submit-button' : 'submit-button'}`}
                 >
                   {tarefa.concluida ? 'Reabrir' : 'Concluir'}
                 </button>
                 
-                <Link
+                <button className="submit-button">
+                  <Link
                   href={`/tarefa/form?id=${tarefa.id}`}
-                  className="bg-blue-100 text-blue-700 p-1 px-2 rounded text-xs"
                 >
                   Editar
                 </Link>
+                </button>
+
                 
                 <button
                   onClick={() => handleRemoverTarefa(tarefa.id)}
-                  className="bg-red-100 text-red-700 p-1 px-2 rounded text-xs"
+                  className="submit-button"
                 >
                   Excluir
                 </button>
@@ -89,7 +92,7 @@ export default function Home() {
             </div>
           ))
         ) : (
-          <p>Nenhuma tarefa encontrada.</p>
+          <p className='nn-tarefa'>🌼 Nenhuma tarefa encontrada.🌼</p>
         )}
       </div>
     </div>
