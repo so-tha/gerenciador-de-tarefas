@@ -16,7 +16,7 @@ Um aplicativo simples para gerenciar tarefas, desenvolvido com Next.js, React e 
 - **tRPC**: Para comunicação tipo-safe entre cliente e servidor
 - **React**: Biblioteca para construção de interfaces
 - **TypeScript**: Superset JavaScript com tipagem estática
-- **Tailwind CSS**: Framework CSS para estilização
+- **CSS**: Para estilização
 
 ## Estrutura do Projeto
 
