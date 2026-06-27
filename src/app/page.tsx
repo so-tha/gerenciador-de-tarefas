@@ -27,6 +27,7 @@ export default function Home() {
 
   // Theme State
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -250,10 +251,10 @@ export default function Home() {
   };
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${isSidebarOpen ? '' : 'sidebar-collapsed'}`}>
       {/* 1. Sidebar */}
       <aside className="sidebar">
-        <button className="sidebar-menu-btn" aria-label="Menu">
+        <button className="sidebar-menu-btn" aria-label="Menu" onClick={() => setIsSidebarOpen(false)} title="Fechar Menu">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -272,7 +273,24 @@ export default function Home() {
       {/* 2. Main Content Area */}
       <main className="main-content">
         <header className="header-container">
-          <h1 className="header-title">Minhas Tarefas</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {!isSidebarOpen && (
+              <button 
+                className="icon-btn toggle-sidebar-floating" 
+                onClick={() => setIsSidebarOpen(true)} 
+                aria-label="Abrir Menu"
+                title="Abrir Menu"
+                style={{ padding: '8px', borderRadius: '50%' }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+            )}
+            <h1 className="header-title">Minhas Tarefas</h1>
+          </div>
           <div className="header-actions">
             <button 
               className="icon-btn theme-toggle-btn" 

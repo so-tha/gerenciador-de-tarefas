@@ -871,5 +871,28 @@ body {
   opacity: 0.08;
 }
 
+/* ==========================================
+   Sidebar Collapse Transitions and States
+   ========================================== */
+
+.sidebar {
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.3s ease, border-right 0.3s ease;
+}
+
+.main-content {
+  transition: margin-left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), padding 0.3s ease;
+}
+
+/* Offscreen translate for the sidebar when closed */
+.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+}
+
+/* Remove main content left margin when sidebar is closed */
+.sidebar-collapsed .main-content {
+  margin-left: 0;
+}
+
+
 
 
