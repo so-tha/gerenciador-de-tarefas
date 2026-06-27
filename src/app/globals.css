@@ -250,6 +250,7 @@ body {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .todo-illustration {
@@ -269,6 +270,67 @@ body {
 .illustration-blob {
   fill: #8f7fbe;
   opacity: 0.15;
+}
+
+.todo-list-custom-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  transition: transform 0.5s ease;
+}
+
+.todo-illustration-container:hover .todo-list-custom-image {
+  transform: scale(1.05);
+}
+
+.illustration-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(98, 91, 113, 0.6);
+  backdrop-filter: blur(4px);
+  color: var(--text-inverse);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 5;
+}
+
+.todo-illustration-container:hover .illustration-overlay {
+  opacity: 1;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D32F2F;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.remove-image-btn:hover {
+  background: #ffffff;
+  transform: scale(1.1);
 }
 
 /* Task Details Panel (Right Side) */
@@ -296,7 +358,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 380px;
+  max-height: 200px;
   overflow-y: auto;
   padding-right: 8px;
 }

@@ -33,8 +33,35 @@ export default function Home() {
   const [timerActive, setTimerActive] = useState(false);
   const [todayFocusMinutes, setTodayFocusMinutes] = useState(23); // Standard value from prototype, can be incremented
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [listImage, setListImage] = useState<string | null>(null);
 
+  // Load listImage from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('todoListImage');
+    if (saved) {
+      setListImage(saved);
+    }
+  }, []);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setListImage(base64String);
+        localStorage.setItem('todoListImage', base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleResetImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setListImage(null);
+    localStorage.removeItem('todoListImage');
+  };
 
   // Get current formatted date
   const [currentDateString, setCurrentDateString] = useState('');
@@ -247,24 +274,54 @@ export default function Home() {
           <div className="dashboard-left-column" style={{ display: 'flex', flexDirection: 'column', gap: '28px', flex: '0 1 1080px', width: '100%', maxWidth: '1080px' }}>
             {/* TO-DO CARD */}
             <section className="card todo-card-layout">
-              {/* Geometric Illustration on the Left */}
-              <div className="todo-illustration-container">
-                <svg className="todo-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Background organic blob */}
-                  <path className="illustration-blob" d="M160 80C175 110 150 145 125 160C100 175 60 170 45 140C30 110 40 70 65 45C90 20 145 50 160 80Z" />
-                  
-                  {/* 1. Organic Rounded Triangle-like shape on top */}
-                  <path className="illustration-shape" d="M96.5 32.7C98.1 30.1 101.9 30.1 103.5 32.7L132.8 81.3C134.4 83.9 132.5 87.2 129.3 87.2H70.7C67.5 87.2 65.6 83.9 67.2 81.3L96.5 32.7Z" fill="#D3C4EC" style={{ transformOrigin: '100px 60px' }} />
-                  
-                  {/* 2. Star/Gear shape on bottom-left */}
-                  <path className="illustration-shape" d="M60.1 113.8L51.9 111.4C50.2 110.9 48.7 112.4 49.2 114.1L51.6 122.3C52.1 124 50.6 125.5 48.9 125L40.7 122.6C39 122.1 37.5 123.6 38 125.3L40.4 133.5C40.9 135.2 39.4 136.7 37.7 136.2L29.5 133.8C27.8 133.3 26.3 134.8 26.8 136.5L29.2 144.7C29.7 146.4 28.2 147.9 26.5 147.4L18.3 145C16.6 144.5 15.1 146 15.6 147.7L18 155.9C18.5 157.6 17 159.1 15.3 158.6L7.1 156.2C5.4 155.7 3.9 157.2 4.4 158.9L6.8 167.1C7.3 168.8 5.8 170.3 4.1 169.8L-4.1 167.4" fill="#C4C4C4" style={{ transform: 'scale(0.8) translate(30px, 30px)', transformOrigin: '60px 140px' }} />
-                  
-                  {/* Flower/Burst custom shape as substitute for gear */}
-                  <path className="illustration-shape" d="M60 115C56 112 50 112 47 116C44 120 45 127 41 129C37 131 31 128 28 132C25 136 27 143 25 147C23 151 17 152 17 157C17 162 23 163 25 167C27 171 25 178 28 182C31 186 37 183 41 185C45 187 44 194 47 198C50 202 56 202 60 199C64 202 70 202 73 198C76 194 75 187 79 185C83 183 89 186 92 182C95 178 93 171 95 167C97 163 103 162 103 157C103 152 97 151 95 147C93 143 95 136 92 132C89 128 83 131 79 129C75 127 76 120 73 116C70 112 64 112 60 115Z" fill="#CECECE" />
+              {/* Geometric Illustration or Custom Image on the Left */}
+              <div className="todo-illustration-container" onClick={() => fileInputRef.current?.click()}>
+                {listImage ? (
+                  <img src={listImage} alt="Ilustração da lista" className="todo-list-custom-image" />
+                ) : (
+                  <svg className="todo-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Background organic blob */}
+                    <path className="illustration-blob" d="M160 80C175 110 150 145 125 160C100 175 60 170 45 140C30 110 40 70 65 45C90 20 145 50 160 80Z" />
+                    
+                    {/* 1. Organic Rounded Triangle-like shape on top */}
+                    <path className="illustration-shape" d="M96.5 32.7C98.1 30.1 101.9 30.1 103.5 32.7L132.8 81.3C134.4 83.9 132.5 87.2 129.3 87.2H70.7C67.5 87.2 65.6 83.9 67.2 81.3L96.5 32.7Z" fill="#D3C4EC" style={{ transformOrigin: '100px 60px' }} />
+                    
+                    {/* 2. Star/Gear shape on bottom-left */}
+                    <path className="illustration-shape" d="M60.1 113.8L51.9 111.4C50.2 110.9 48.7 112.4 49.2 114.1L51.6 122.3C52.1 124 50.6 125.5 48.9 125L40.7 122.6C39 122.1 37.5 123.6 38 125.3L40.4 133.5C40.9 135.2 39.4 136.7 37.7 136.2L29.5 133.8C27.8 133.3 26.3 134.8 26.8 136.5L29.2 144.7C29.7 146.4 28.2 147.9 26.5 147.4L18.3 145C16.6 144.5 15.1 146 15.6 147.7L18 155.9C18.5 157.6 17 159.1 15.3 158.6L7.1 156.2C5.4 155.7 3.9 157.2 4.4 158.9L6.8 167.1C7.3 168.8 5.8 170.3 4.1 169.8L-4.1 167.4" fill="#C4C4C4" style={{ transform: 'scale(0.8) translate(30px, 30px)', transformOrigin: '60px 140px' }} />
+                    
+                    {/* Flower/Burst custom shape as substitute for gear */}
+                    <path className="illustration-shape" d="M60 115C56 112 50 112 47 116C44 120 45 127 41 129C37 131 31 128 28 132C25 136 27 143 25 147C23 151 17 152 17 157C17 162 23 163 25 167C27 171 25 178 28 182C31 186 37 183 41 185C45 187 44 194 47 198C50 202 56 202 60 199C64 202 70 202 73 198C76 194 75 187 79 185C83 183 89 186 92 182C95 178 93 171 95 167C97 163 103 162 103 157C103 152 97 151 95 147C93 143 95 136 92 132C89 128 83 131 79 129C75 127 76 120 73 116C70 112 64 112 60 115Z" fill="#CECECE" />
 
-                  {/* 3. Rounded Square on bottom-right */}
-                  <rect className="illustration-shape" x="120" y="110" width="50" height="50" rx="14" fill="#C5C2C7" style={{ transformOrigin: '145px 135px' }} />
-                </svg>
+                    {/* 3. Rounded Square on bottom-right */}
+                    <rect className="illustration-shape" x="120" y="110" width="50" height="50" rx="14" fill="#C5C2C7" style={{ transformOrigin: '145px 135px' }} />
+                  </svg>
+                )}
+
+                {/* Overlay to trigger upload */}
+                <div className="illustration-overlay">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                  <span>Alterar Imagem</span>
+                </div>
+
+                {listImage && (
+                  <button className="remove-image-btn" onClick={handleResetImage} title="Remover Imagem" aria-label="Remover imagem">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                )}
+
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  style={{ display: 'none' }} 
+                  accept="image/*" 
+                  onChange={handleImageChange}
+                />
               </div>
 
               {/* Tasks Panel */}
