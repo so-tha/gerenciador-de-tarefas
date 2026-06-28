@@ -13,7 +13,22 @@ interface Task {
 }
 
 export default function Home() {
-  const { data: tarefas, refetch } = trpc.tarefas.listar.useQuery();
+  // Auth state & operations
+  const { data: sessionUser, isLoading: isLoadingSession, refetch: refetchSession } = trpc.auth.me.useQuery();
+  const loginMutation = trpc.auth.login.useMutation();
+  const registrarMutation = trpc.auth.registrar.useMutation();
+  const logoutMutation = trpc.auth.logout.useMutation();
+
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  const { data: tarefas, refetch } = trpc.tarefas.listar.useQuery(undefined, {
+    enabled: !!sessionUser
+  });
   const criarTarefa = trpc.tarefas.criar.useMutation();
   const atualizarTarefa = trpc.tarefas.atualizar.useMutation();
   const removerTarefa = trpc.tarefas.remover.useMutation();
@@ -28,6 +43,50 @@ export default function Home() {
   // Theme State
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+    } catch (e) {
+      console.error('Erro ao deslogar no servidor:', e);
+    }
+    localStorage.removeItem('auth_token');
+    setUsername('');
+    setPassword('');
+    setAuthSuccess(null);
+    setAuthError(null);
+    await refetchSession();
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setAuthSuccess(null);
+    setIsAuthLoading(true);
+
+    try {
+      if (activeTab === 'login') {
+        const res = await loginMutation.mutateAsync({ username, password });
+        localStorage.setItem('auth_token', res.token);
+        setAuthSuccess('Login realizado com sucesso! Redirecionando...');
+        setTimeout(async () => {
+          await refetchSession();
+          await refetch();
+          setIsAuthLoading(false);
+        }, 500);
+      } else {
+        await registrarMutation.mutateAsync({ username, password });
+        setAuthSuccess('Conta criada com sucesso! Você já pode entrar.');
+        setActiveTab('login');
+        setPassword('');
+        setIsAuthLoading(false);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Ocorreu um erro. Tente novamente.';
+      setAuthError(message);
+      setIsAuthLoading(false);
+    }
+  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -250,8 +309,130 @@ export default function Home() {
     }
   };
 
+  if (isLoadingSession) {
+    return (
+      <div className="page-loading-screen">
+        <div className="auth-spinner" style={{ borderTopColor: 'var(--color-purple-dark)' }}></div>
+      </div>
+    );
+  }
+
+  if (!sessionUser) {
+    return (
+      <div className="auth-wrapper">
+        <button 
+          className="icon-btn theme-toggle-btn auth-theme-floating" 
+          onClick={toggleTheme} 
+          aria-label={theme === 'dark' ? 'Ativar Modo Claro' : 'Ativar Modo Escuro'}
+          title={theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+        >
+          {theme === 'dark' ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          )}
+        </button>
+        <div className="auth-card">
+          <div className="auth-logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </div>
+          <h2 className="auth-title">Organize-se</h2>
+          <p className="auth-subtitle">Gerencie suas tarefas de forma simples e produtiva.</p>
+
+          <div className="auth-tabs">
+            <button 
+              className={`auth-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('login'); setAuthError(null); setAuthSuccess(null); }}
+            >
+              Entrar
+            </button>
+            <button 
+              className={`auth-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('register'); setAuthError(null); setAuthSuccess(null); }}
+            >
+              Cadastrar
+            </button>
+          </div>
+
+          <form className="auth-form" onSubmit={handleAuthSubmit}>
+            {authError && (
+              <div className="auth-error">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                {authError}
+              </div>
+            )}
+            {authSuccess && (
+              <div className="auth-success">
+                {authSuccess}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="auth-username">Nome de Usuário</label>
+              <input 
+                id="auth-username"
+                className="form-input"
+                type="text"
+                required
+                placeholder="Seu usuário"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="auth-password">Senha</label>
+              <input 
+                id="auth-password"
+                className="form-input"
+                type="password"
+                required
+                placeholder="Sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <button 
+              className="auth-submit-btn" 
+              type="submit"
+              disabled={isAuthLoading}
+            >
+              {isAuthLoading ? (
+                <div className="auth-spinner"></div>
+              ) : activeTab === 'login' ? (
+                'Acessar Conta'
+              ) : (
+                'Criar Conta'
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`app-container ${isSidebarOpen ? '' : 'sidebar-collapsed'}`}>
+    <div className={`app-container ${isSidebarOpen ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
       {/* 1. Sidebar */}
       <aside className="sidebar">
         <button className="sidebar-menu-btn" aria-label="Menu" onClick={() => setIsSidebarOpen(false)} title="Fechar Menu">
@@ -268,6 +449,27 @@ export default function Home() {
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
         </button>
+
+        {/* User profile at the bottom of the sidebar */}
+        <div className="user-profile-widget" title={sessionUser.username}>
+          <div className="user-profile-avatar">
+            {sessionUser.username.substring(0, 2).toUpperCase()}
+          </div>
+          {isSidebarOpen && (
+            <div className="user-profile-info">
+              <span className="user-profile-name">{sessionUser.username}</span>
+            </div>
+          )}
+          {isSidebarOpen && (
+            <button className="user-logout-btn" onClick={handleLogout} title="Sair da Conta" aria-label="Sair">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          )}
+        </div>
       </aside>
 
       {/* 2. Main Content Area */}
@@ -291,7 +493,20 @@ export default function Home() {
             )}
             <h1 className="header-title">Minhas Tarefas</h1>
           </div>
-          <div className="header-actions">
+          <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: '500', color: 'var(--text-muted)' }}>
+              <span>Olá, <strong>{sessionUser.username}</strong></span>
+              {!isSidebarOpen && (
+                <button className="user-logout-btn" onClick={handleLogout} title="Sair da Conta" aria-label="Sair">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                </button>
+              )}
+            </div>
+
             <button 
               className="icon-btn theme-toggle-btn" 
               onClick={toggleTheme} 

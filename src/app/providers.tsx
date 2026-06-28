@@ -10,7 +10,18 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: '/api/trpc', 
+          url: '/api/trpc',
+          headers() {
+            if (typeof window !== 'undefined') {
+              const token = localStorage.getItem('auth_token');
+              if (token) {
+                return {
+                  Authorization: `Bearer ${token}`,
+                };
+              }
+            }
+            return {};
+          }
         }),
       ],
     })
