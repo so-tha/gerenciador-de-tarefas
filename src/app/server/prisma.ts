@@ -1,27 +1,25 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import path from 'path';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 function createPrismaClient() {
-  // Obter URL do banco do process.env ou fallback
-  const rawUrl = process.env.DATABASE_URL || 'file:./dev.db';
+  let connectionString = process.env.DATABASE_URL;
   
-  // Limpar prefixo "file:" para resolver o caminho absoluto contra o process.cwd()
-  const cleanPath = rawUrl.replace(/^file:/, '');
-  const absolutePath = path.resolve(process.cwd(), cleanPath);
+  // Fallback para URL placeholder para compilação local se o banco não estiver configurado localmente
+  if (!connectionString || (!connectionString.startsWith('postgres') && !connectionString.startsWith('postgresql'))) {
+    console.warn('[Prisma] DATABASE_URL não é uma URL de PostgreSQL válida. Usando placeholder para compilação.');
+    connectionString = 'postgresql://placeholder:placeholder@localhost:5432/placeholder';
+  }
+
+  // Criar pool de conexões do pg
+  const pool = new Pool({ connectionString });
   
-  // Remontar a URL com o caminho absoluto
-  const dbUrl = `file:${absolutePath}`;
-
-  console.log(`[Prisma] Connecting to SQLite database at: ${dbUrl}`);
-
-  const adapter = new PrismaBetterSqlite3({
-    url: dbUrl,
-  });
+  // Adaptador para PostgreSQL
+  const adapter = new PrismaPg(pool);
 
   return new PrismaClient({ adapter });
 }
