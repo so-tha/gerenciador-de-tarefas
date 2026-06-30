@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-neon": "^7.8.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@supabase/ssr": "^0.12.0",
@@ -24,6 +26,7 @@
     "pg": "^8.22.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "ws": "^8.21.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

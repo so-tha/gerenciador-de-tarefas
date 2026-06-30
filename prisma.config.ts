@@ -9,7 +9,7 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // DIRECT_URL usa porta 5432 (conexão direta) — necessário para migrações
-    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
+    // Neon: uma única URL para tudo — sem pgbouncer, sem DIRECT_URL
+    url: process.env["DATABASE_URL"],
   },
 });
